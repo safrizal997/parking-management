@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Parking-Management
+
+  jpa:
+    database: mysql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: true
+
+  datasource:
+    platform: mysql
+    url: jdbc:mysql://localhost:3306/db_parkingmanagement
+    username: root
+    password: rizal280697
+
