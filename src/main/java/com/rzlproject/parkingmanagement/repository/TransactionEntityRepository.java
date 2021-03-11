@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,6 +15,10 @@ public interface TransactionEntityRepository extends JpaRepository<TransactionEn
 
     Optional<TransactionEntity> findByPlatNumberAndIsOutFalse(String platNumber);
 
-    TransactionEntity findByTypeCar(TypeEntity typeCar);
+    TransactionEntity findByTypeCarAndPlatNumber(TypeEntity typeCar, String platNumber);
+
+    int countTransactionEntityByTypeCar(TypeEntity typeCar);
+
+    List<TransactionEntity> findByColorIgnoreCase(String color);
 
 }

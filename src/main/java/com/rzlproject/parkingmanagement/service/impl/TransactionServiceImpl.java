@@ -1,20 +1,18 @@
 package com.rzlproject.parkingmanagement.service.impl;
 
-import com.rzlproject.parkingmanagement.entity.TransactionEntity;
 import com.rzlproject.parkingmanagement.entity.ParkingLotEntity;
+import com.rzlproject.parkingmanagement.entity.TransactionEntity;
 import com.rzlproject.parkingmanagement.entity.TypeEntity;
-import com.rzlproject.parkingmanagement.model.ExitVehicleRequest;
-import com.rzlproject.parkingmanagement.model.ExitVehicleResponse;
-import com.rzlproject.parkingmanagement.model.RegistrationRequest;
-import com.rzlproject.parkingmanagement.model.RegistrationResponse;
-import com.rzlproject.parkingmanagement.repository.TransactionEntityRepository;
+import com.rzlproject.parkingmanagement.model.*;
 import com.rzlproject.parkingmanagement.repository.ParkingLotEntityRepository;
+import com.rzlproject.parkingmanagement.repository.TransactionEntityRepository;
 import com.rzlproject.parkingmanagement.repository.TypeEntityRepository;
 import com.rzlproject.parkingmanagement.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -37,45 +35,45 @@ public class TransactionServiceImpl implements TransactionService {
     public RegistrationResponse newRegistration(RegistrationRequest registrationRequest) {
 
 
-        TypeEntity type = typeEntityRepository.findByTypeCarIgnoreCase(registrationRequest.getType());
-        TransactionEntity carToSave = new TransactionEntity(
-                registrationRequest.getPlatNumber(),
-                registrationRequest.getColor(),
-                type
+        Optional<TypeEntity> type = typeEntityRepository.findByTypeCarIgnoreCase(registrationRequest.getType());
 
-        );
+        if (type.isPresent()) {
 
-        List<ParkingLotEntity> parkingLots = parkingLotEntityRepository.findByIsAvailableTrue();
+            TransactionEntity carToSave = new TransactionEntity(
+                    registrationRequest.getPlatNumber(),
+                    registrationRequest.getColor(),
+                    type.get()
 
-        if (!parkingLots.isEmpty()) {
+            );
 
-            ParkingLotEntity parkingLot = parkingLots.get(0);
-            parkingLotEntityRepository.setAvailableToFalse(parkingLot.getIdParkingLot());
+            List<ParkingLotEntity> parkingLots = parkingLotEntityRepository.findByIsAvailableTrue();
 
-            RegistrationResponse registrationResponse = new RegistrationResponse();
-            registrationResponse.setPlatNumber(registrationRequest.getPlatNumber());
-            registrationResponse.setParkingLot(parkingLot.getParkingLot());
-            registrationResponse.setDateEntrance(new Date());
+            if (!parkingLots.isEmpty()) {
 
-            carToSave.setDateEntrance(registrationResponse.getDateEntrance());
-            transactionEntityRepository.save(carToSave);
-            // Save to DB transaction
-        /*
-        id,
-        platnomor:  registrationRequest.getPlatNumber(),
-        tglmasuk,: registration.getDateEntrance()
-        tglkeluar,: null
-        jumlah bayar : type.getPrice()
-        isKeluar: boolean (true/false)
+                ParkingLotEntity parkingLot = parkingLots.get(0);
+                parkingLotEntityRepository.setAvailableToFalse(parkingLot.getIdParkingLot());
 
-         */
+                RegistrationResponse registrationResponse = new RegistrationResponse();
+                registrationResponse.setPlatNumber(registrationRequest.getPlatNumber());
 
-            return registrationResponse;
+                registrationResponse.setParkingLot(parkingLot.getParkingLot());
+                registrationResponse.setDateEntrance(new Date());
+
+                ParkingLotEntity lot = parkingLotEntityRepository
+                        .findByParkingLotIgnoreCase(registrationResponse.getParkingLot());
+
+                carToSave.setParkingLot(lot);
+                carToSave.setDateEntrance(registrationResponse.getDateEntrance());
+                transactionEntityRepository.save(carToSave);
+
+                return registrationResponse;
+            }
         }
         return null;
     }
 
     @Override
+    @Transactional
     public ExitVehicleResponse exitVehicle(ExitVehicleRequest exitVehicleRequest) {
 
         Optional<TransactionEntity> platNumber = transactionEntityRepository
@@ -90,7 +88,7 @@ public class TransactionServiceImpl implements TransactionService {
             exitVehicleResponse.setDateEntrance(transaction.getDateEntrance());
             exitVehicleResponse.setDateExit(new Date());
 
-            TransactionEntity typeCar = transactionEntityRepository.findByTypeCar(transaction.getTypeCar());
+            TransactionEntity typeCar = transactionEntityRepository.findByTypeCarAndPlatNumber(transaction.getTypeCar(), transaction.getPlatNumber());
             Integer price = typeCar.getTypeCar().getPrice();
 
             long parkingTime = exitVehicleResponse.getDateExit().getTime() - exitVehicleResponse.getDateEntrance().getTime();
@@ -107,6 +105,8 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setOut(true);
             transaction.setPaidAmount(exitVehicleResponse.getPaidAmount());
 
+            parkingLotEntityRepository.setAvailableToTrue(transaction.getParkingLot().getIdParkingLot());
+
             // SAVING TO DB
             transactionEntityRepository.save(transaction);
 
@@ -114,35 +114,34 @@ public class TransactionServiceImpl implements TransactionService {
         }
         return null;
     }
+
+    @Override
+    public ReportVehicleByTypeResponse reportVehicleByType(ReportVehicleByTypeRequest reportVehicleByTypeRequest) {
+
+        Optional<TypeEntity> type = typeEntityRepository
+                .findByTypeCarIgnoreCase(reportVehicleByTypeRequest.getType());
+
+        if (type.isPresent()) {
+            int totalVehicle = transactionEntityRepository
+                    .countTransactionEntityByTypeCar(type.get());
+
+            return new ReportVehicleByTypeResponse(totalVehicle);
+        }
+        return new ReportVehicleByTypeResponse(0);
+    }
+
+    @Override
+    public ReportVehicleByColorResponse reportVehicleByColor(ReportVehicleByColorRequest reportVehicleByColorRequest) {
+
+        List<TransactionEntity> transaction = transactionEntityRepository
+                .findByColorIgnoreCase(reportVehicleByColorRequest.getColor());
+
+        List<String> platNumberByColor = new ArrayList<>();
+        for (var listColor : transaction) {
+            platNumberByColor.add(listColor.getPlatNumber());
+        }
+
+        return new ReportVehicleByColorResponse(platNumberByColor);
+    }
 }
-
-
-//        TransactionEntity getPlatNumber = carEntityRepository.findByPlatNumber(registrationRequest.getPlatNumber());
-//
-//        List<TransactionEntity1> vehicleStatus = transactionEntityRepository.findByOutIsFalse();
-//
-//        if (vehicleStatus.isEmpty()) {
-//
-//            ExitVehicleResponse exitVehicleResponse = new ExitVehicleResponse();
-//            exitVehicleResponse.setPlatNumber(getPlatNumber.getPlatNumber());
-//            exitVehicleResponse.setDateEntrance(registrationResponse.getDateEntrance());
-//            exitVehicleResponse.setDateExit(new Date());
-//
-//
-//            TypeEntity typeCar = typeEntityRepository.findByTypeCarIgnoreCase(typeEntity.getPrice());
-//            Integer price = typeCar.getPrice();
-//
-//            long parkingTime = exitVehicleResponse.getDateExit().getTime() - exitVehicleResponse.getDateEntrance().getTime();
-//            int parkingTimeOnHour = (int) parkingTime / 24;
-//
-//            Integer payment = (parkingTimeOnHour * 5000);
-//            Integer paidAmounts =price + payment;
-//
-//            exitVehicleResponse.setPaidAmount(paidAmounts);
-//
-//            TransactionEntity1 status = new TransactionEntity1();
-//            transactionEntityRepository.setIsOutToTrue(status.getIdTransaction());
-//            return null;
-//        }
-//    }
 

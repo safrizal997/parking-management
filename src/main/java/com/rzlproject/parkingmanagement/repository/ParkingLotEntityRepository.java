@@ -13,8 +13,14 @@ public interface ParkingLotEntityRepository extends JpaRepository<ParkingLotEnti
 
     List<ParkingLotEntity> findByIsAvailableTrue();
 
+    ParkingLotEntity findByParkingLotIgnoreCase(String parkingLot);
+
     @Modifying
     @Query("update ParkingLotEntity p set p.isAvailable = false where p.idParkingLot =?1")
     void setAvailableToFalse(Integer idParkingLot);
+
+    @Modifying
+    @Query("update ParkingLotEntity p set p.isAvailable = true where p.idParkingLot =?1")
+    void setAvailableToTrue(Integer idParkingLot);
 
 }

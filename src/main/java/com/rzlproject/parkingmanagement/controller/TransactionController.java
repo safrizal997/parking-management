@@ -1,11 +1,6 @@
 package com.rzlproject.parkingmanagement.controller;
 
-import com.rzlproject.parkingmanagement.entity.TransactionEntity;
-import com.rzlproject.parkingmanagement.entity.TypeEntity;
-import com.rzlproject.parkingmanagement.model.ExitVehicleRequest;
-import com.rzlproject.parkingmanagement.model.ExitVehicleResponse;
-import com.rzlproject.parkingmanagement.model.RegistrationRequest;
-import com.rzlproject.parkingmanagement.model.RegistrationResponse;
+import com.rzlproject.parkingmanagement.model.*;
 import com.rzlproject.parkingmanagement.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,7 +27,7 @@ public class TransactionController {
     public ResponseEntity<?> newRegistration(@RequestBody RegistrationRequest registrationRequest) {
 
         RegistrationResponse registrationResponse = transactionService.newRegistration(registrationRequest);
-        if ( registrationResponse!= null) {
+        if (registrationResponse != null) {
             return new ResponseEntity<>(registrationResponse, HttpStatus.CREATED);
         }
 
@@ -45,13 +40,19 @@ public class TransactionController {
         return new ResponseEntity<>(responseDefault, HttpStatus.NOT_FOUND);
     }
 
-//    public RegistrationResponse newRegistration(@RequestBody RegistrationRequest registrationRequest){
-//        return transactionService.newRegistration(registrationRequest);
-//    }
-
     @PostMapping(path = "/transaction")
-    public ExitVehicleResponse exitVehicle (@RequestBody ExitVehicleRequest exitVehicleRequest){
+    public ExitVehicleResponse exitVehicle(@RequestBody ExitVehicleRequest exitVehicleRequest) {
         return transactionService.exitVehicle(exitVehicleRequest);
+    }
+
+    @PostMapping(path = "/report/type")
+    public ReportVehicleByTypeResponse reportVehicleByType(@RequestBody ReportVehicleByTypeRequest reportVehicleByTypeRequest) {
+        return transactionService.reportVehicleByType(reportVehicleByTypeRequest);
+    }
+
+    @PostMapping(path = "/report/color")
+    public ReportVehicleByColorResponse reportVehicleByColor(@RequestBody ReportVehicleByColorRequest reportVehicleByColorRequest) {
+        return transactionService.reportVehicleByColor(reportVehicleByColorRequest);
     }
 
 

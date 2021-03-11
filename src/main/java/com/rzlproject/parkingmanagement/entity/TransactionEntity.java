@@ -22,6 +22,10 @@ public class TransactionEntity {
     @JoinColumn(name = "fk_type_car",referencedColumnName = "id_type")
     private TypeEntity typeCar;
 
+    @OneToOne
+    @JoinColumn(name = "fk_parking_lot", referencedColumnName = "id_parking_lot")
+    private ParkingLotEntity parkingLot;
+
     @Column(name = "date_entrance")
     private Date dateEntrance;
 
@@ -45,12 +49,7 @@ public class TransactionEntity {
         this.typeCar = typeCar;
     }
 
-    public TransactionEntity(Date dateEntrance, Date dateExit, Integer paidAmount, boolean isOut) {
-        this.dateEntrance = dateEntrance;
-        this.dateExit = dateExit;
-        this.paidAmount = paidAmount;
-        this.isOut = isOut;
-    }
+
 
     public TransactionEntity(Date dateEntrance){
         this.dateEntrance = dateEntrance;
@@ -90,6 +89,14 @@ public class TransactionEntity {
 
     public void setTypeCar(TypeEntity typeCar) {
         this.typeCar = typeCar;
+    }
+
+    public ParkingLotEntity getParkingLot() {
+        return parkingLot;
+    }
+
+    public void setParkingLot(ParkingLotEntity parkingLot) {
+        this.parkingLot = parkingLot;
     }
 
     public Date getDateEntrance() {
