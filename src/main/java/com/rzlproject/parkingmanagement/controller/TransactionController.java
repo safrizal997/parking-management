@@ -1,9 +1,12 @@
 package com.rzlproject.parkingmanagement.controller;
 
-import com.rzlproject.parkingmanagement.entity.ParkingLotEntity;
+import com.rzlproject.parkingmanagement.entity.TransactionEntity;
+import com.rzlproject.parkingmanagement.entity.TypeEntity;
+import com.rzlproject.parkingmanagement.model.ExitVehicleRequest;
+import com.rzlproject.parkingmanagement.model.ExitVehicleResponse;
 import com.rzlproject.parkingmanagement.model.RegistrationRequest;
 import com.rzlproject.parkingmanagement.model.RegistrationResponse;
-import com.rzlproject.parkingmanagement.service.RegistrationService;
+import com.rzlproject.parkingmanagement.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,16 +22,16 @@ import java.util.Map;
 
 
 @RestController
-@RequestMapping(path = "/api/parking-management/v1/registration", produces = MediaType.APPLICATION_JSON_VALUE)
-public class RegistrationController {
+@RequestMapping(path = "/api/parking-management/v1/", produces = MediaType.APPLICATION_JSON_VALUE)
+public class TransactionController {
 
     @Autowired
-    RegistrationService registrationService;
+    TransactionService transactionService;
 
-    @PostMapping
-    public ResponseEntity<?> newRegistration(@RequestBody RegistrationRequest registrationRequest, ParkingLotEntity parkingLotEntity) {
+    @PostMapping(path = "/registration")
+    public ResponseEntity<?> newRegistration(@RequestBody RegistrationRequest registrationRequest) {
 
-        RegistrationResponse registrationResponse = registrationService.newRegistration(registrationRequest, parkingLotEntity);
+        RegistrationResponse registrationResponse = transactionService.newRegistration(registrationRequest);
         if ( registrationResponse!= null) {
             return new ResponseEntity<>(registrationResponse, HttpStatus.CREATED);
         }
@@ -40,6 +43,15 @@ public class RegistrationController {
         responseDefault.put("timestamp", new Date());
 
         return new ResponseEntity<>(responseDefault, HttpStatus.NOT_FOUND);
+    }
+
+//    public RegistrationResponse newRegistration(@RequestBody RegistrationRequest registrationRequest){
+//        return transactionService.newRegistration(registrationRequest);
+//    }
+
+    @PostMapping(path = "/transaction")
+    public ExitVehicleResponse exitVehicle (@RequestBody ExitVehicleRequest exitVehicleRequest){
+        return transactionService.exitVehicle(exitVehicleRequest);
     }
 
 

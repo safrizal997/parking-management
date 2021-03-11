@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface TypeEntityRepository extends JpaRepository<TypeEntity, Integer> {
 
     TypeEntity findByTypeCarIgnoreCase(String Type);
+   // TypeEntity findByTypeCarIgnoreCase(Integer price);
 
 }
