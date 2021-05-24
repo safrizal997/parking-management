@@ -23,7 +23,7 @@ public class TransactionController {
     @Autowired
     TransactionService transactionService;
 
-    @PostMapping(path = "/registration")
+    @PostMapping(path = "/registration", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> newRegistration(@RequestBody RegistrationRequest registrationRequest) {
 
         RegistrationResponse registrationResponse = transactionService.newRegistration(registrationRequest);

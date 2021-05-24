@@ -23,4 +23,7 @@ public interface ParkingLotEntityRepository extends JpaRepository<ParkingLotEnti
     @Query("update ParkingLotEntity p set p.isAvailable = true where p.idParkingLot =?1")
     void setAvailableToTrue(Integer idParkingLot);
 
+    @Query(value="select * from tbl_parking_lot", nativeQuery = true)
+    List<ParkingLotEntity> findAllParkingLot();
+
 }
